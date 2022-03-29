@@ -25,6 +25,9 @@ public class HapticController : MonoBehaviour
     private Temperature temperature;
     private Force hapticForce;
     private Vector3 raySpread;
+
+    [SerializeField]
+    private Transform vrController;
     // Start is called before the first frame update
     void Start()
     {
@@ -47,7 +50,7 @@ public class HapticController : MonoBehaviour
     }
 
     void FixedUpdate(){
-        int layerMask = 1 << 6;
+        /*int layerMask = 1 << 6;
 
         layerMask = ~layerMask;
         
@@ -67,9 +70,27 @@ public class HapticController : MonoBehaviour
                 effect.Set(temperature, hapticForce, WeArtTexture.Default);
                 hapticObjectIndex.AddEffect(effect);
             }
+        }*/
+    }
+
+    private void HapticFeedbackForce(){
+        float distance = Vector3.Distance(vrController.position, transform.position);
+        if(distance < maxHitDistance)
+        {
+            var effect = new UpdateTouchedHaptics();
+
+            hapticForce.Active = true;
+            hapticForce.Value = 1 - (distance / maxHitDistance * maxForce - minForce);
+            effect.Set(temperature, hapticForce, WeArtTexture.Default);
+            hapticObjectIndex.AddEffect(effect);
         }
     }
 
+    void OnCollisionEnter(Collision col){
+        if(col.gameObject.layer != 6){
+            HapticFeedbackForce();
+        }
+    }
     internal class UpdateTouchedHaptics : IWeArtEffect
     {
        

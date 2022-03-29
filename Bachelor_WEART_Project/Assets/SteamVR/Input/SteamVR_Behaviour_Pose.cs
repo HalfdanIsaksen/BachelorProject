@@ -67,7 +67,7 @@ namespace Valve.VR
         protected int deviceIndex = -1;
 
         protected SteamVR_HistoryBuffer historyBuffer = new SteamVR_HistoryBuffer(30);
-
+        public Vector3 offsetRotation = new Vector3();
 
         protected virtual void Start()
         {
@@ -127,12 +127,15 @@ namespace Valve.VR
             if (origin != null)
             {
                 transform.position = origin.transform.TransformPoint(poseAction[inputSource].localPosition);
-                transform.rotation = origin.rotation * poseAction[inputSource].localRotation;
+                //transform.rotation =  origin.rotation * poseAction[inputSource].localRotation;
+                transform.eulerAngles = (poseAction[inputSource].localRotation * Quaternion.Euler(offsetRotation)).eulerAngles;
+                Debug.Log("DER ORIGIN");
             }
             else
             {
                 transform.localPosition = poseAction[inputSource].localPosition;
                 transform.localRotation = poseAction[inputSource].localRotation;
+                Debug.Log("DER IKKE ORIGIN");
             }
         }
 
