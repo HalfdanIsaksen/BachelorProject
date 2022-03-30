@@ -88,6 +88,7 @@ public class HapticController : MonoBehaviour
 
     void OnCollisionEnter(Collision col){
         if(col.gameObject.layer != 6){
+            Debug.Log("Not layer 6");
             HapticFeedbackForce();
         }
     }

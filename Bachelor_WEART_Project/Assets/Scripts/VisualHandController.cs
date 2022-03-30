@@ -44,18 +44,29 @@ public class VisualHandController : MonoBehaviour
         FollowTracker();
     }
 
+    void FixedUpdate(){
+        //FollowTracker();
+    }
     private void FollowTracker()
     {
         //position tracking
         var positionWithOffset = followTarget.position + positionOffset;
-        var distance = Vector3.Distance(positionWithOffset, transform.position);
-        ownRigidBody.velocity = (positionWithOffset - transform.position).normalized * (followSpeed * distance) * Time.deltaTime;
+        var distance = Vector3.Distance(positionWithOffset, ownRigidBody.position);
+        ownRigidBody.velocity = (positionWithOffset - ownRigidBody.position).normalized * (followSpeed * distance) * Time.fixedDeltaTime;
 
-        //Rotation tracking
+        //Rotation tracking, but it makes a 360 everytime rotation is done
         var rotationWithOffset = followTarget.rotation * Quaternion.Euler(rotationOffset);
         var differenceRotation = rotationWithOffset * Quaternion.Inverse(ownRigidBody.rotation);
         differenceRotation.ToAngleAxis(out float angle, out Vector3 axis);
-        ownRigidBody.angularVelocity = axis * (angle *Mathf.Deg2Rad * rotateSpeed) * Time.deltaTime;
+        ownRigidBody.angularVelocity = axis * (angle * Mathf.Deg2Rad * rotateSpeed) * Time.fixedDeltaTime;
+
+
+        // Simply teleports the hand to the same rotation as the controller
+        //transform.rotation = followTarget.rotation * Quaternion.Euler(rotationOffset);
+        
+        /*Same problem with the rotation wanting to be constant to the controllers
+        Quaternion rotationWithOffset = followTarget.rotation * Quaternion.Euler(rotationOffset);
+        ownRigidBody.MoveRotation(rotationWithOffset);*/
     }
 
 }
