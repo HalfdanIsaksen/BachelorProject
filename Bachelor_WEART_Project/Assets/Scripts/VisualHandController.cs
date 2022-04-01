@@ -38,14 +38,8 @@ public class VisualHandController : MonoBehaviour
         ownRigidBody.rotation = followTarget.rotation;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        FollowTracker();
-    }
-
     void FixedUpdate(){
-        //FollowTracker();
+        FollowTracker();
     }
     private void FollowTracker()
     {
@@ -58,15 +52,14 @@ public class VisualHandController : MonoBehaviour
         var rotationWithOffset = followTarget.rotation * Quaternion.Euler(rotationOffset);
         var differenceRotation = rotationWithOffset * Quaternion.Inverse(ownRigidBody.rotation);
         differenceRotation.ToAngleAxis(out float angle, out Vector3 axis);
-        ownRigidBody.angularVelocity = axis * (angle * Mathf.Deg2Rad * rotateSpeed) * Time.fixedDeltaTime;
-
-
-        // Simply teleports the hand to the same rotation as the controller
-        //transform.rotation = followTarget.rotation * Quaternion.Euler(rotationOffset);
         
-        /*Same problem with the rotation wanting to be constant to the controllers
-        Quaternion rotationWithOffset = followTarget.rotation * Quaternion.Euler(rotationOffset);
-        ownRigidBody.MoveRotation(rotationWithOffset);*/
-    }
+        if(Mathf.Abs(axis.magnitude) != Mathf.Infinity){
+            if(angle > 180.0f)
+            {
+                angle -= 360.0f;
+            }
+            ownRigidBody.angularVelocity = axis * (angle * Mathf.Deg2Rad * rotateSpeed) * Time.fixedDeltaTime;
 
+        }
+    }
 }

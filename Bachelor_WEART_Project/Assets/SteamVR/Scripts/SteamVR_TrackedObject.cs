@@ -6,6 +6,7 @@
 
 using UnityEngine;
 using Valve.VR;
+//using System;
 
 namespace Valve.VR
 {
@@ -39,6 +40,42 @@ namespace Valve.VR
         public Transform origin;
 
         public bool isValid { get; private set; }
+
+        /*void Start(){
+
+        }
+        void Update(){
+            SetTrackedObjectToMovingDevice();
+        }
+
+        private void GetPositionOfDevices(){
+            TrackedDevicePose_t[] poses = new TrackedDevicePose_t[]{};
+            foreach(EIndex value in Enum.GetValues(typeof(EIndex))){
+                    if(value > 0){
+                    var i = (int)value;
+                    var devices = new SteamVR_Utils.RigidTransform(poses[i].mDeviceToAbsoluteTracking);
+                    if(moveingController.pos )
+                    {
+
+                    }
+                }
+            }
+        }
+
+        private void SetTrackedObjectToMovingDevice(){
+            TrackedDevicePose_t[] poses = new TrackedDevicePose_t[]{};
+            
+            foreach(EIndex value in Enum.GetValues(typeof(EIndex))){
+                if(value > 0){
+                    var i = (int)value;
+                    var moveingController = new SteamVR_Utils.RigidTransform(poses[i].mDeviceToAbsoluteTracking);
+                    if(moveingController.pos )
+                    {
+
+                    }
+                }
+            }
+        }*/
 
         private void OnNewPoses(TrackedDevicePose_t[] poses)
         {
