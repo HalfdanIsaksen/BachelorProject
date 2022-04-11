@@ -22,8 +22,6 @@ public class VisualHandController : MonoBehaviour
     private float ownMass;
     private SteamVR_TrackedObject VRController;
 
-    [SerializeField]
-    private SteamVR_TrackedObject.EIndex index;
 
     // Start is called before the first frame update
     void Start()

@@ -19,6 +19,7 @@ public class HapticController : MonoBehaviour
     //Variable for control of force pressure
     private float maxForce = 0.75f;
     private float minForce = 0.0f;
+    [SerializeField]
     private float maxHitDistance = 0.05f;
     private float minDistance;
 
@@ -41,11 +42,8 @@ public class HapticController : MonoBehaviour
     [SerializeField]
     private Transform vrController;
     // Start is called before the first frame update
-
     void Start()
     {
-
-        
         /*temperature = new Temperature();
         hapticForce = new Force();
         raySpread = Vector3.up;
@@ -65,15 +63,12 @@ public class HapticController : MonoBehaviour
         
     }
 
-    void FixedUpdate(){
-        
-        HapticFeedbackForce();
-        
+    void FixedUpdate(){  
+        HapticFeedbackForce();  
     }
 
     private void HapticFeedbackForce(){
         var effect = new UpdateTouchedHaptics();
-
 
         if(hapticFeedbackTriggered){
            
@@ -91,12 +86,12 @@ public class HapticController : MonoBehaviour
 
                 hapticForce.Active = true;
                 
-                hapticForce.Value = (distance / maxHitDistance * (maxForce - minForce));
+                //hapticForce.Value = (distance / maxHitDistance * (maxForce - minForce));
 
                 //lort
-                hapticForce.Value = 0.8f * ((distance/maxHitDistance) * (distance/maxHitDistance));
+                hapticForce.Value = ((distance/maxHitDistance) * (distance/maxHitDistance));
 
-                hapticForce.Value = Mathf.Clamp(hapticForce.Value, minForce, maxForce);
+                //hapticForce.Value = Mathf.Clamp(hapticForce.Value, minForce, maxForce);
                     
                 effect.Set(temperature, hapticForce, WeArtTexture.Default);
                 hapticObjectIndex.AddEffect(effect);
@@ -133,7 +128,7 @@ public class HapticController : MonoBehaviour
 
                         //Debug.Log("Index position: " + hapticObjectIndex.transform.position);
 
-                        indexThimbleCollidingPosition = hapticObjectIndex.transform.position;
+                        //indexThimbleCollidingPosition = hapticObjectIndex.transform.position;
 
                         vrControllerCollidingPosition = vrController.transform.position.y;
                         vrControllerCollidingPositionIsSet = true;
@@ -142,7 +137,6 @@ public class HapticController : MonoBehaviour
 
                         //minDistance = Vector3.Distance(vrControllerCollidingPosition, transform.position); 
                         
-
                         if(!hapticFeedbackTriggered){
                             hapticFeedbackTriggered = true;
                         } 
