@@ -30,38 +30,13 @@ public class HapticController : MonoBehaviour
     private UpdateTouchedHaptics effect;
     private Temperature temperature;
     private Force hapticForce;
-
-    private Vector3 raySpread;
-
     private float vrControllerCollidingPosition;
-
     private Vector3 indexThimbleCollidingPosition;
-
     private bool vrControllerCollidingPositionIsSet = false;
 
     [SerializeField]
     private Transform vrController;
     // Start is called before the first frame update
-    void Start()
-    {
-        /*temperature = new Temperature();
-        hapticForce = new Force();
-        raySpread = Vector3.up;
-
-
-        temperature.Active = true;
-        temperature.Value = 0.1f;
-        effect.Set(temperature, hapticForce, WeArtTexture.Default);
-        hapticObjectIndex.AddEffect(effect);*/
-
-        //var effect = new UpdateTouchedHaptics();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     void FixedUpdate(){  
         HapticFeedbackForce();  
@@ -70,26 +45,21 @@ public class HapticController : MonoBehaviour
     private void HapticFeedbackForce(){
         var effect = new UpdateTouchedHaptics();
 
-        if(hapticFeedbackTriggered){
-           
+        if(hapticFeedbackTriggered){ 
             float distance = (vrControllerCollidingPosition - vrController.position.y);
             //float distance = Vector3.Distance(indexThimbleCollidingPosition, hapticObjectIndex.transform.position);
             
-            Debug.DrawLine(vrController.position, transform.position, new Color(1.0f, 0.0f, 0.0f));
+            //Debug.DrawLine(vrController.position, transform.position, new Color(1.0f, 0.0f, 0.0f));
    
-            //if(0.0000000000001f < distance && distance < maxHitDistance)
             if(distance > 0.0f)
             {
-                //Debug.Log("Distance: " + distance);
-
-                //Debug.Log("ratio: " + distance/maxHitDistance);
 
                 hapticForce.Active = true;
                 
                 //hapticForce.Value = (distance / maxHitDistance * (maxForce - minForce));
 
-                //lort
                 hapticForce.Value = ((distance/maxHitDistance) * (distance/maxHitDistance));
+                //Debug.LogFormat("Haptic force: {0}, Distance Ratio: {1}", hapticForce.Value, (distance/maxHitDistance));
 
                 //hapticForce.Value = Mathf.Clamp(hapticForce.Value, minForce, maxForce);
                     
@@ -101,39 +71,45 @@ public class HapticController : MonoBehaviour
             hapticForce.Value = minForce;
             effect.Set(temperature, Force.Default, WeArtTexture.Default);
             hapticObjectIndex.AddEffect(effect);
-            //hapticObjectIndex.RemoveEffect(effect);
             hapticFeedbackTriggered = false;
-            ///Debug.Log("No efffect");
-            //hapticObjectMiddle.RemoveEffect(effect);
             }
         }
     }
+    private void HapticFeedbackTempurature(){        
+        temperature = new Temperature();
+        hapticForce = new Force();
+
+        temperature.Active = true;
+        temperature.Value = 0.1f;
+        effect.Set(temperature, hapticForce, WeArtTexture.Default);
+        hapticObjectIndex.AddEffect(effect);
+    }
+
+    public float GetForceValue{
+        get => hapticForce.Value;
+    }
+
+    public float GetTemperatureValue{
+        get => temperature.Value;
+    }
 
     void OnCollisionEnter(Collision col){
-
-        
         if(col.gameObject.layer != 6){
 
             if(col.gameObject.tag == "largeGlassSection"){
                 //Debug.Log("Large glass Section");
                 collidersHitting++;
 
-                
                 foreach(ContactPoint contact in col.contacts){
 
                     var colName = contact.thisCollider.name;
 
                     if(colName == "Index_collider" && !vrControllerCollidingPositionIsSet){
-                        Debug.Log("Index finger collides");
-
-                        //Debug.Log("Index position: " + hapticObjectIndex.transform.position);
 
                         //indexThimbleCollidingPosition = hapticObjectIndex.transform.position;
 
                         vrControllerCollidingPosition = vrController.transform.position.y;
                         vrControllerCollidingPositionIsSet = true;
-
-                        //Debug.Log("Position of VR Controller at collision" + vrControllerCollidingPosition); 
 
                         //minDistance = Vector3.Distance(vrControllerCollidingPosition, transform.position); 
                         
@@ -142,42 +118,22 @@ public class HapticController : MonoBehaviour
                         } 
                     }
                 }
-
             }
-            
-
-            //minDistance = Vector3.Distance(vrController.position, transform.position);
-            //Debug.Log("Offset distance:" + minDistance);
-            //Debug.Log("Colliders touching: " + collidersHitting);
-            //collidersHitting ++;
-            // if(!hapticFeedbackTriggered){
-            //     hapticFeedbackTriggered = true;
-            // }
         }
     }
 
     void OnCollisionExit(Collision col){
         if(col.gameObject.layer != 6){
-
-            // collidersHitting --;
-            // if(collidersHitting < 1){
-            //     hapticFeedbackTriggered = false;
-            // }
-            
-
             if(col.gameObject.tag == "largeGlassSection"){
-                Debug.Log("Some collider exits");
                 vrControllerCollidingPositionIsSet = false;
             //hapticFeedbackTriggered = false;
             }
-
         }
 
     }
 
     internal class UpdateTouchedHaptics : IWeArtEffect
     {
-       
         public event Action OnUpdate;
 
         // Gets the Temperature.
