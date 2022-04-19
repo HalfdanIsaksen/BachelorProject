@@ -22,9 +22,10 @@ public class HapticController : MonoBehaviour
     [SerializeField]
     private float maxHitDistance = 0.05f;
     private float minDistance;
-
-    private bool hapticFeedbackTriggered = false;
-
+    [SerializeField]
+    private bool indexHapticFeedbackTriggered = false;
+    [SerializeField]
+    private bool middleHapticFeedbackTriggered = false;
     private int collidersHitting = 0;
     
     private UpdateTouchedHaptics effect;
@@ -45,7 +46,7 @@ public class HapticController : MonoBehaviour
     private void HapticFeedbackForce(){
         var effect = new UpdateTouchedHaptics();
 
-        if(hapticFeedbackTriggered){ 
+        if(indexHapticFeedbackTriggered || middleHapticFeedbackTriggered){ 
             float distance = (vrControllerCollidingPosition - vrController.position.y);
             //float distance = Vector3.Distance(indexThimbleCollidingPosition, hapticObjectIndex.transform.position);
             
@@ -64,14 +65,21 @@ public class HapticController : MonoBehaviour
                 //hapticForce.Value = Mathf.Clamp(hapticForce.Value, minForce, maxForce);
                     
                 effect.Set(temperature, hapticForce, WeArtTexture.Default);
-                hapticObjectIndex.AddEffect(effect);
-                //hapticObjectMiddle.AddEffect(effect);
+                if(indexHapticFeedbackTriggered){
+                    hapticObjectIndex.AddEffect(effect);
+                }
+                if(middleHapticFeedbackTriggered){
+                    hapticObjectMiddle.AddEffect(effect);
+                }
+
             }else{
       
             hapticForce.Value = minForce;
             effect.Set(temperature, Force.Default, WeArtTexture.Default);
             hapticObjectIndex.AddEffect(effect);
-            hapticFeedbackTriggered = false;
+            hapticObjectMiddle.AddEffect(effect);
+            indexHapticFeedbackTriggered = false;
+            middleHapticFeedbackTriggered = false;
             }
         }
     }
@@ -95,7 +103,6 @@ public class HapticController : MonoBehaviour
 
     void OnCollisionEnter(Collision col){
         if(col.gameObject.layer != 6){
-
             if(col.gameObject.tag == "largeGlassSection"){
                 //Debug.Log("Large glass Section");
                 collidersHitting++;
@@ -106,6 +113,8 @@ public class HapticController : MonoBehaviour
 
                     if(colName == "Index_collider" && !vrControllerCollidingPositionIsSet){
 
+                        //hapticIndexFinger = true;
+
                         //indexThimbleCollidingPosition = hapticObjectIndex.transform.position;
 
                         vrControllerCollidingPosition = vrController.transform.position.y;
@@ -113,14 +122,36 @@ public class HapticController : MonoBehaviour
 
                         //minDistance = Vector3.Distance(vrControllerCollidingPosition, transform.position); 
                         
-                        if(!hapticFeedbackTriggered){
-                            hapticFeedbackTriggered = true;
+                        if(!indexHapticFeedbackTriggered && colName == "Index_collider"){
+                            indexHapticFeedbackTriggered = true;
+                        }
+                    }
+                    if(colName == "Middle_collider" && !vrControllerCollidingPositionIsSet){
+
+                        vrControllerCollidingPosition = vrController.transform.position.y;
+                        vrControllerCollidingPositionIsSet = true;
+
+                        if(!middleHapticFeedbackTriggered && colName == "Middle_collider"){
+                            middleHapticFeedbackTriggered = true;
                         } 
                     }
                 }
             }
         }
     }
+
+    void OnCollisionStay(Collision col){
+        foreach(ContactPoint contact in col.contacts){
+            var colName = contact.thisCollider.name;
+            if(colName == "Index_collider"){
+                indexHapticFeedbackTriggered = true;
+            }
+            if(colName == "Middle_collider"){
+                middleHapticFeedbackTriggered = true;
+            }
+        }
+    }
+
 
     void OnCollisionExit(Collision col){
         if(col.gameObject.layer != 6){

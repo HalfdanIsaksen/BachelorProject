@@ -1,9 +1,6 @@
 using UnityEngine;
-using Valve.VR.InteractionSystem;
 
 [RequireComponent(typeof(AudioSource))]
-[RequireComponent(typeof(Interactable))]
-
 
 public class SoundOnHover : MonoBehaviour
 {
@@ -22,17 +19,20 @@ public class SoundOnHover : MonoBehaviour
 
     void Update(){
         if(hapticController != null){
-            if(hapticController.GetForceValue > 0.1f){
+            if(hapticController.GetForceValue > 0.01f){
                 scriptFaust.setParameter(7, 0.2f);
                 scriptFaust.setParameter(9, 0.05f);
+            }else{
+                scriptFaust.setParameter(7, 1);
+                scriptFaust.setParameter(9, 0);
             }
         }
 
     }
+
     void OnCollisionEnter(Collision col){
         if(col.gameObject.layer == 6){
             hapticController = col.gameObject.GetComponentInParent<HapticController>();
-
             audioSource.enabled = true;
 
             if (!audioSource.isPlaying)
@@ -42,19 +42,5 @@ public class SoundOnHover : MonoBehaviour
                 audioSource.Play();
             }
         }
-    }
-
-    void OnCollisionExit(Collision col){
-        foreach(ContactPoint contact in col.contacts){
-            Debug.Log("Exit");
-            var colName = contact.otherCollider.name;
-            if(colName == "Index_collider"){
-                Debug.Log("Index exit");
-                scriptFaust.setParameter(7, 1);
-                scriptFaust.setParameter(9, 0);
-            }
-        }
-        scriptFaust.setParameter(7, 1);
-        scriptFaust.setParameter(9, 0);
     }
   }
