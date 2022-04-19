@@ -20,11 +20,12 @@ public class SoundOnHover : MonoBehaviour
     void Update(){
         if(hapticController != null){
             if(hapticController.GetForceValue > 0.01f){
-                scriptFaust.setParameter(7, 0.2f);
-                scriptFaust.setParameter(9, 0.05f);
+                scriptFaust.setParameter(7, 1 - hapticController.GetForceValue);
+                scriptFaust.setParameter(9, 0.12f);
             }else{
                 scriptFaust.setParameter(7, 1);
                 scriptFaust.setParameter(9, 0);
+                hapticController = null;
             }
         }
 
