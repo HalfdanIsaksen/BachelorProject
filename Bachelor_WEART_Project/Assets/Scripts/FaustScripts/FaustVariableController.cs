@@ -14,10 +14,10 @@ public class FaustVariableController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        print("FAUSTVARIABLECONTROLLER: inside Start");
+        //print("FAUSTVARIABLECONTROLLER: inside Start");
         scriptFaust = CubeAudio.GetComponent<FaustPlugin_glassHarmonica>();
         bowPressure = scriptFaust.getParameter(7);
-        print("scriptFaust.parameters damp = " + bowPressure);
+        //print("scriptFaust.parameters damp = " + bowPressure);
         integrationConstant = scriptFaust.getParameter(9);
         panAngle = scriptFaust.getParameter(12);
         spatialWidth = scriptFaust.getParameter(13);
@@ -26,6 +26,8 @@ public class FaustVariableController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+
         if (dummy_Toggle == 1)
         {
             // setParameter(int param, float x)
