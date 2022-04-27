@@ -35,7 +35,7 @@ public class FaustVariableController : MonoBehaviour
             scriptFaust.setParameter(9, 0.1f);
             scriptFaust.setParameter(12, 0.5f);
             scriptFaust.setParameter(13, 0.5f);
-            print("VALUE CHANGED! scriptFaust.getParameter(7)= " + (scriptFaust.getParameter(7)));
+            //print("VALUE CHANGED! scriptFaust.getParameter(7)= " + (scriptFaust.getParameter(7)));
             dummy_Toggle = 0;
         }
     }
