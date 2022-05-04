@@ -12,8 +12,11 @@ public class SoundOnHover : MonoBehaviour
 
     public float bowPressure;
     public float integrationConstant;
+    public float integrationConstantValue;
 
     public float forceExponentialConstant = 0.2f;
+
+    private float sweetSpotBowPressure = 0.75f;
 
     // Start is called before the first frame update
     void Start()
@@ -28,59 +31,76 @@ public class SoundOnHover : MonoBehaviour
 
     }
 
-    float CalcBowPressure(float forceValue){
-        
+    private float CalcBowPressure(float forceValue)
+    {
+        //Debug.Log(forceValue);
+
         bowPressure = Mathf.Pow(forceValue, forceExponentialConstant);
 
-        if(forceValue >= 0.3 && forceValue <= 0.4){
-            bowPressure = 0.85f;
+        if (forceValue >= 0.4 && forceValue <= 0.6)
+        {
+            bowPressure = sweetSpotBowPressure;
         }
-        // }else{
-        //     bowPressure = 1.0f;
-        // }
-        // if(bowPressure >= 0.2f){
-        //     bowPressure = 0.2f;
-        // }else{
-        //     bowPressure = 1.0f;
-        // }
-
-
-        //Debug.LogFormat("Force: {0}, Bowpressure: {1}", forceValue, bowPressure);
         return bowPressure;
     }
 
-    void Update(){
-        if(hapticController != null){
-            if(hapticController.GetForceValue > 0.03f){
+    private float CalcIntegrationConstant(float temperature)
+    {
+
+        //temperature range: 0.0 - 0.55, integration constant range: 0.15 - 0.0
+        integrationConstantValue = hapticController.Map(temperature, 0.0f, 0.55f, 0.15f, 0.05f);
+        return integrationConstantValue;
+    }
+
+    void Update()
+    {
+        if (hapticController != null)
+        {
+            Debug.Log("Force value inside SoundOnHover: " + hapticController.GetForceValue);
+            if (hapticController.GetForceValue > 0.03f)
+            {
 
                 scriptFaust.setParameter(7, CalcBowPressure(hapticController.GetForceValue));
 
-                
-                //scriptFaust.setParameter(7, 1 - hapticController.GetForceValue);
-                //Debug.Log(bowPressure);
-                scriptFaust.setParameter(9, 0.15f); //integration constant -> bow velocity
+                integrationConstantValue = 0.15f;
+
+                float temperature = hapticController.GetTemperatureValue;
+                //Debug.LogFormat("Temperature: {0} IntegrationConstant: {1}", temperature, integrationConstantValue);
+
+                if ((hapticController.GetCurrentCondition == 1 || hapticController.GetCurrentCondition == 3) && temperature != 0.0f)
+                {
+
+                    CalcIntegrationConstant(temperature);
+
+                    //Debug.LogFormat("Temperature, inside con: {0}... IntegrationConstant, inside con: {1}", temperature, integrationConstantValue);
+
+                }
+
+                scriptFaust.setParameter(9, integrationConstantValue); //integration constant -> bow velocity
 
                 audioSource.enabled = true;
-                if (!audioSource.isPlaying )
+                if (!audioSource.isPlaying)
                 {
                     audioSource.clip = glass;
                     audioSource.Play();
                 }
-            }else{
+            }
+            else
+            {
                 scriptFaust.setParameter(7, 1);
                 scriptFaust.setParameter(9, 0);
                 hapticController = null;
-               
+                         
+
             }
         }
     }
-    /*
-
-    */
 
 
-    void OnCollisionEnter(Collision col){
-        if(col.gameObject.layer == 6){
+    void OnCollisionEnter(Collision col)
+    {
+        if (col.gameObject.layer == 6)
+        {
             hapticController = col.gameObject.GetComponentInParent<HapticController>();
             // audioSource.enabled = true;
 
@@ -91,4 +111,4 @@ public class SoundOnHover : MonoBehaviour
             // }
         }
     }
-  }
+}
