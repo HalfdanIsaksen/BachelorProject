@@ -21,12 +21,15 @@ public class HapticController : MonoBehaviour
     [SerializeField]
     private float maxHitDistance = 0.05f;
     [SerializeField]
-    private float minDistance;
+    private float minDistance = 0.05f;
     [SerializeField]
+
+    private float distance;
     private bool indexHapticFeedbackTriggered = false;
     [SerializeField]
     private bool middleHapticFeedbackTriggered = false;
 
+    private bool soundOn = false;
     //Variable for creating the haptic effect which is applied
     private UpdateTouchedHaptics effect;
 
@@ -46,7 +49,7 @@ public class HapticController : MonoBehaviour
     private WeArtTexture textureToThumb;
 
 
-
+    private Vector3 vrControllerCollidingPositionVector;
 
     //Variable for controller where the VR-controllers y-position
     //when collision with another game object occurs
@@ -98,7 +101,8 @@ public class HapticController : MonoBehaviour
         Force,
         Temperature,
         Texture,
-        All
+        All,
+        None
     }
 
     // Start is called before the first frame update
@@ -113,31 +117,48 @@ public class HapticController : MonoBehaviour
         {
             case TestCondition.Force:
                 HapticFeedbackForce();
+                ApplyEffect();
                 break;
             case TestCondition.Temperature:
                 HapticFeedbackTempurature();
+                ApplyEffect();
                 break;
             case TestCondition.Texture:
                 HapticFeedbackTexture();
+                ApplyEffect();
                 break;
             case TestCondition.All:
                 HapticFeedbackForce();
                 HapticFeedbackTempurature();
                 HapticFeedbackTexture();
+                ApplyEffect();
                 break;
+            case TestCondition.None:
+                HapticFeedbackTempurature();
+                break;
+
         }
-        //Debug.LogFormat("VRControllerposition: {0}, VrController position is set: {1}", vrControllerCollidingPosition, vrControllerCollidingPositionIsSet);
-        ApplyEffect();
     }
 
     void OnApplicationQuit()
     {
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+
+        if (!waterIsHit)
+        {
+            ActivateTemperatureFeedback(other);
+        }
+    }
+
     void OnCollisionEnter(Collision col)
     {
+        vrControllerCollidingPositionVector = this.gameObject.transform.position;
+
         ActivateHapticFeedback(col);
-        ActivateTemperatureFeedback(col);
+
     }
 
     void OnCollisionStay(Collision col)
@@ -160,9 +181,11 @@ public class HapticController : MonoBehaviour
                         indexHapticFeedbackTriggered = true;
 
                         indexTextureTriggered = true;
+                        soundOn = true;
                     }
                     if (colName == "Middle_collider")
                     {
+                        soundOn = true;
                         middleHapticFeedbackTriggered = true;
 
                         middleTextureTriggered = true;
@@ -174,21 +197,35 @@ public class HapticController : MonoBehaviour
 
     void OnCollisionExit(Collision col)
     {
+        // List<String> colnames = new List<String>();
+        // foreach (ContactPoint contact in col.contacts)
+        // {
+        //     colnames.Add(contact.thisCollider.name);            
+        // }
+        // if(!colnames.Contains("Index_collider") && colnames != null){
+        //     Debug.Log("Vi burde have gjort det sådan her");
+        // }
         //if we are no longer in contact with object in water layer
-        if (col.transform.name == "Water")
+        if (col.gameObject.name == "Water")
         {
             //Debug.Log("No longer in contact with " + col.transform.name);
             //set time of water release
             timeAtWaterRelease = DateTime.Now;
         }
-
         if (col.gameObject.tag == "Instrument")
         {
-            indexTextureTriggered = false;
-            middleTextureTriggered = false;
-
+            // indexTextureTriggered = false;
+            // middleTextureTriggered = false;
+            soundOn = false;
         }
+    }
 
+    void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.name == "Water")
+        {
+            timeAtWaterRelease = DateTime.Now;
+        }
     }
 
     private void ActivateHapticFeedback(Collision col)
@@ -201,53 +238,47 @@ public class HapticController : MonoBehaviour
             //check each contact point
             if (col.gameObject.tag == "Instrument")
             {
+
                 foreach (ContactPoint contact in col.contacts)
                 {
-
+                    //Debug.Log("HEr..");
                     var colName = contact.thisCollider.name;
                     //If one of the colliders name is Index_collider and the y-position of the controller is not set
                     //set the y-position of the controller to the controllers current y-position,
                     // and set haptic feedback for index finger to be true
-                    if (colName == "Index_collider")
+                    if (colName == "Index_collider" || colName == "Middle_collider")
                     {
 
-                        vrControllerCollidingPosition = vrController.transform.position.y;
-                        //vrControllerCollidingPositionIsSet = true;
+                        if (!vrControllerCollidingPositionIsSet)
+                        {
+                            //Debug.Log("Kommer vi ind her?");
+                            vrControllerCollidingPosition = vrController.transform.position.y;
+                            vrControllerCollidingPositionIsSet = true;
+                        }
 
                         if (!indexHapticFeedbackTriggered && colName == "Index_collider")
                         {
                             indexHapticFeedbackTriggered = true;
-
                             indexTextureTriggered = true;
+                        }
+                        if (!middleHapticFeedbackTriggered && colName == "Middle_collider")
+                        {
+                            middleHapticFeedbackTriggered = true;
+                            middleTextureTriggered = true;
                         }
                     }
                     //If one of the colliders name is Middle_collider and the y-position of the controller is not set
                     //set the y-position of the controller to the controllers current y-position
                     // and set haptic feedback for index finger to be true
-                    if (colName == "Middle_collider")
-                    {
-
-                        vrControllerCollidingPosition = vrController.transform.position.y;
-                        //vrControllerCollidingPositionIsSet = true;
-
-                        if (!middleHapticFeedbackTriggered && colName == "Middle_collider")
-                        {
-                            middleHapticFeedbackTriggered = true;
-
-                            middleTextureTriggered = true;
-                        }
-                    }
                 }
             }
-
         }
-
     }
 
-    private void ActivateTemperatureFeedback(Collision col)
+    private void ActivateTemperatureFeedback(Collider col)
     {
         //if hand/player layer (6) is colliding with water layer (4), set to true 
-        if (col.gameObject.layer == 4 && this.gameObject.layer == 6)
+        if (col.gameObject.layer == 4)
         {
             waterIsHit = true;
         }
@@ -257,17 +288,25 @@ public class HapticController : MonoBehaviour
     private float CalculateForceValue()
     {
         float distance = (vrControllerCollidingPosition - vrController.position.y);
-        this.calculatedForce = Mathf.Pow((distance / maxHitDistance), 2);
+
+        calculatedForce = Mathf.Pow((distance / maxHitDistance), 2);
         calculatedForce = Mathf.Clamp(calculatedForce, 0.0f, 1.0f);
+
+        if (distance < minDistance)
+        {
+            vrControllerCollidingPositionIsSet = false;
+            indexTextureTriggered = false;
+            middleTextureTriggered = false;
+        }
 
         return calculatedForce;
     }
 
-    private void ResetHapticFeedback()
-    {
-        vrControllerCollidingPositionIsSet = false;
-        vrControllerCollidingPosition = minDistance;
-    }
+    // private void ResetHapticFeedback()
+    // {
+    //     vrControllerCollidingPositionIsSet = false;
+    //     vrControllerCollidingPosition = minDistance;
+    // }
 
     private void HapticFeedbackForce()
     {
@@ -285,17 +324,6 @@ public class HapticController : MonoBehaviour
                 //set the haptic force to be active
                 forceValueToIndex.Active = true;
                 forceValueToMiddle.Active = true;
-
-                //set the value for the haptic force feedback to be equals
-                //The distance/maxhitdistance squared
-                //calculatedForce = ((distance / maxHitDistance) * (distance / maxHitDistance));
-
-                //Put calculatedForce function here
-
-                //calculatedForce = Mathf.Pow((distance / maxHitDistance), 2);
-                //calculatedForce = Mathf.Clamp(calculatedForce, 0.0f, 1.0f); //clamp between 0 and 1
-
-                //Debug.Log("Calculated Force: " + calculatedForce);
 
                 //apply the effect    
                 //check if any of the fingeres can get haptic feedback, if yes, then apply feedback
@@ -318,31 +346,34 @@ public class HapticController : MonoBehaviour
                 //hapticForce.Value = minForce;
                 forceValueToIndex.Value = minForce;
                 forceValueToMiddle.Value = minForce;
-                forceValueToIndex.Active = false;
-                forceValueToMiddle.Active = false;
+                // forceValueToIndex.Active = false;
+                // forceValueToMiddle.Active = false;
 
-                ///effect.Set(temperature, Force.Default, weArtTexture);
-
-                //Add effect to both fingers.
-                ///hapticObjectIndex.AddEffect(effect);
-                ///hapticObjectMiddle.AddEffect(effect);
                 //Set our fingers to not wanting haptic feedback anymore
                 indexHapticFeedbackTriggered = false;
                 middleHapticFeedbackTriggered = false;
+                soundOn = false;
+
                 //ResetHapticFeedback();
             }
         }
     }
+
+    public bool GetSoundState
+    {
+        get => soundOn;
+    }
     private void HapticFeedbackTempurature()
     {
-        //create a new effect
-        //effect = new UpdateTouchedHaptics();
+
         //Set the temperature to be active, and the temperture to be cold
         temperature.Active = true;
 
         //if we have hit layer with water
         if (waterIsHit)
         {
+            temperature.Value = temperatureWater;
+            Debug.Log("Water is hit, temperature is :" + temperature.Value);
             //calculate timespan from release of hands from water till now
             TimeSpan timeElapsedAfterWaterRelease = DateTime.Now.Subtract(timeAtWaterRelease);
 
@@ -355,50 +386,23 @@ public class HapticController : MonoBehaviour
             {
                 //start linear degrade towards neutral temperature
                 temperature.Value = Map((float)timeElapsedAfterWaterRelease.TotalSeconds, 0.0f, (timeInSecondsForLinearTempDegrade + timeInSecondsBeforeTemperatureDegrade), temperatureWater, temperatureNeutral);
+                if (temperature.Value >= temperatureNeutral)
+                {
+                    waterIsHit = false;
+                }
             }
-
-            //reset
-            if (temperature.Value >= temperatureNeutral)
-            {
-                waterIsHit = false;
-            }
-
-            //Debug.LogFormat("time elapsed: {0}, Temperature: {1}", timeElapsedAfterWaterRelease.TotalSeconds, temperature.Value);
-
-            //Apply changes to haptic feedback
-            ///effect.Set(temperature, Force.Default, weArtTexture);
-            //Add the effect to the fingers
-            ///hapticObjectIndex.AddEffect(effect);
-            ///hapticObjectMiddle.AddEffect(effect);
-
 
         }
         else //water not hit, just apply neutral temperature
         {
             temperature.Value = temperatureNeutral;
-            //Apply changes to haptic feedback
-            ///effect.Set(temperature, Force.Default, weArtTexture);
-            //Add the effect to the fingers
-            ///hapticObjectIndex.AddEffect(effect);
-            ///hapticObjectMiddle.AddEffect(effect);
+
         }
 
     }
 
     private void HapticFeedbackTexture()
     {
-
-        //create a new effect
-        //effect = new UpdateTouchedHaptics();
-        //Set the texture feedback to be active
-        //weArtTexture.Active = true;
-
-        //weArtTexture.TextureType = TextureType.ProfiledRubberSlow;
-        // weArtTexture.Volume = 100;
-        // weArtTexture.VelocityX = 0.0f;
-        // weArtTexture.VelocityY = 0.0f;
-        // weArtTexture.VelocityZ = 0.0f;
-
         //choose which texture type is given as output, set intensity to max
         if (indexTextureTriggered)
         {
@@ -407,7 +411,7 @@ public class HapticController : MonoBehaviour
 
             textureToIndex.Volume = Map(calculatedForce, 0.0f, 0.3f, 0.0f, 100.0f);
 
-            if (CalculateForceValue() >= 0.4 && CalculateForceValue() <= 0.6)
+            if (CalculateForceValue() >= 0.3 && CalculateForceValue() <= 0.6)
             {
                 textureToIndex.Volume = 100;
                 //Debug.Log(textureToIndex.Volume);
@@ -417,28 +421,7 @@ public class HapticController : MonoBehaviour
             {
                 textureToIndex.Volume = 0;
             }
-            //else
-            //{
-            // textureToIndex.Volume = Map(calculatedForce, 0.0f, 1.0f, 0.0f, 100.0f);
-            // }
-
-            // textureToIndex.Volume = Mathf.Pow(textureToIndex.Volume, 2);
-
-            // textureToIndex.Volume = 100;
-
-
-            //Debug.Log("Inside first if");
-            //Debug.Log("Calculated force :" + CalculateForceValue());
-
-            // if(CalculateForceValue() <= 0.000f){
-
-            //     indexTextureTriggered = false;
-            //     textureToIndex.Active = false;
-
-            //     Debug.Log("Inside second if");
-            // }
         }
-        //else if (!indexTextureTriggered)
         else
         {
             textureToIndex.Active = false;
@@ -455,26 +438,6 @@ public class HapticController : MonoBehaviour
         {
             textureToMiddle.Active = false;
         }
-        // if(indexTextureTriggered && CalculateForceValue() <= 0.3f)
-        // {  
-        //     Debug.Log("Kører her"); 
-        //     textureToIndex.Volume = 0;
-        //     textureToIndex.Active = false;
-        //     indexTextureTriggered = false;
-        // }
-        // if (middleHapticFeedbackTriggered)
-        // {
-        //     textureToMiddle.Volume = 100;
-        //     textureToMiddle.Active = true;
-        //     textureToMiddle.TextureType = weArtTexture.TextureType;
-        // }
-        // else
-        // {
-        //     textureToMiddle.Active = false;
-        // }
-        //Apply effect and add the effect to the fingers
-        //effect.Set(temperature, Force.Default, weArtTexture);
-        //hapticObjectIndex.AddEffect(effect);
     }
 
     void ApplyEffect()
@@ -496,6 +459,16 @@ public class HapticController : MonoBehaviour
         return (x - x1) / (x2 - x1) * (y2 - y1) + y1;
     }
 
+    public Vector3 GetvrControllerCollidingPositionVector
+    {
+        get => vrControllerCollidingPositionVector;
+    }
+
+    public bool GetVRCollidingPositionIsSet
+    {
+        get => vrControllerCollidingPositionIsSet;
+    }
+
     public int GetCurrentCondition
     {
         get => (int)currentTestCondition;
@@ -504,7 +477,7 @@ public class HapticController : MonoBehaviour
     //Calculated force, instead of actual force.
     public float GetForceValue
     {
-        get => calculatedForce;
+        get => CalculateForceValue();
         //get => forceValueToIndex.Value; 
     }
 
