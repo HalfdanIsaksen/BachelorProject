@@ -39,7 +39,7 @@ public class RotateAnimation : MonoBehaviour
         
         rotationDegrees = 100.0f;
 
-        transform.Rotate(new Vector3(0f, rotationDegrees, 0f) * rotationVelocity);
+        transform.Rotate(new Vector3(0f, rotationDegrees, 0f) * rotationVelocity * Time.deltaTime);
     }
 
     void OnCollisionEnter(Collision col)

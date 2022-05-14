@@ -102,7 +102,8 @@ public class HapticController : MonoBehaviour
         Temperature,
         Texture,
         All,
-        None
+        None,
+        ForceTexture
     }
 
     // Start is called before the first frame update
@@ -135,6 +136,11 @@ public class HapticController : MonoBehaviour
                 break;
             case TestCondition.None:
                 HapticFeedbackTempurature();
+                break;
+            case TestCondition.ForceTexture:
+                HapticFeedbackForce();
+                HapticFeedbackTexture();
+                ApplyEffect();
                 break;
 
         }
@@ -185,7 +191,7 @@ public class HapticController : MonoBehaviour
                     }
                     if (colName == "Middle_collider")
                     {
-                        soundOn = true;
+                        //soundOn = true;
                         middleHapticFeedbackTriggered = true;
 
                         middleTextureTriggered = true;
@@ -373,7 +379,7 @@ public class HapticController : MonoBehaviour
         if (waterIsHit)
         {
             temperature.Value = temperatureWater;
-            Debug.Log("Water is hit, temperature is :" + temperature.Value);
+            //Debug.Log("Water is hit, temperature is :" + temperature.Value);
             //calculate timespan from release of hands from water till now
             TimeSpan timeElapsedAfterWaterRelease = DateTime.Now.Subtract(timeAtWaterRelease);
 
@@ -384,19 +390,21 @@ public class HapticController : MonoBehaviour
             }
             else
             {
-                //start linear degrade towards neutral temperature
-                temperature.Value = Map((float)timeElapsedAfterWaterRelease.TotalSeconds, 0.0f, (timeInSecondsForLinearTempDegrade + timeInSecondsBeforeTemperatureDegrade), temperatureWater, temperatureNeutral);
-                if (temperature.Value >= temperatureNeutral)
-                {
-                    waterIsHit = false;
-                }
+                temperature.Value = temperatureNeutral;
+                // //start linear degrade towards neutral temperature
+                // temperature.Value = Map((float)timeElapsedAfterWaterRelease.TotalSeconds, 0.0f, (timeInSecondsForLinearTempDegrade + timeInSecondsBeforeTemperatureDegrade), temperatureWater, temperatureNeutral);
+                // if (temperature.Value >= temperatureNeutral)
+                // {
+                //     waterIsHit = false;
+                //     Debug.Log("Ready to get water again");
+                // }
             }
 
         }
         else //water not hit, just apply neutral temperature
         {
             temperature.Value = temperatureNeutral;
-
+            Debug.Log("Ready to get water again");
         }
 
     }
@@ -430,9 +438,20 @@ public class HapticController : MonoBehaviour
 
         if (middleTextureTriggered)
         {
-            textureToMiddle.Volume = 100;
             textureToMiddle.Active = true;
             textureToMiddle.TextureType = weArtTexture.TextureType;
+            textureToMiddle.Volume = Map(calculatedForce, 0.0f, 0.3f, 0.0f, 100.0f);
+
+            if (CalculateForceValue() >= 0.2 && CalculateForceValue() <= 0.6)
+            {
+                textureToMiddle.Volume = 100;
+                //Debug.Log(textureToIndex.Volume);
+
+            }
+            else
+            {
+                textureToMiddle.Volume = 0;
+            }
         }
         else
         {
@@ -450,7 +469,7 @@ public class HapticController : MonoBehaviour
         effectMiddle.Set(temperature, forceValueToMiddle, textureToMiddle);
 
         hapticObjectIndex.AddEffect(effectIndex);
-        hapticObjectMiddle.AddEffect(effectMiddle);
+        //hapticObjectMiddle.AddEffect(effectMiddle);
 
     }
 
