@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.IO;
 
 [RequireComponent(typeof(AudioSource))]
 
@@ -28,6 +29,21 @@ public class SoundOnHover : MonoBehaviour
 
     private float sweetSpotBowPressure = 0.85f;
 
+    //Variables for time logging
+
+    private float secondsInSweetSpot;
+
+    private float secondsAtMaxForce;
+
+    private bool maxForceIsCounted = false;
+
+
+
+    [SerializeField]
+    public GameObject dataLogger;
+
+    private DataLogger dataLoggerScript;
+
 
     // Start is called before the first frame update
     void Start()
@@ -35,12 +51,28 @@ public class SoundOnHover : MonoBehaviour
         audioObject = GameObject.FindGameObjectsWithTag("Instrument");
         audioSource = this.gameObject.GetComponent<AudioSource>();
         scriptFaust = this.gameObject.GetComponent<FaustPlugin_glassHarmonica>();
+
+        dataLoggerScript = dataLogger.GetComponent<DataLogger>();
+        //dataLogger = dataLogger.GetComponent<DataLogger>();
+        //secondsAtMaxForce = dataLogger.GetComponent<DataLogger>().secondsAtMaxForce;
+
     }
+
+    void OnApplicationQuit()
+    {
+        //print("Time at sweet spot: " + TimeSpan.FromSeconds(secondsInSweetSpot));
+        //print("Time at max force: " + TimeSpan.FromSeconds(secondsAtMaxForce));
+
+    }
+
+  
+
 
     void OnCollisionEnter(Collision col)
     {
         if (col.gameObject.layer == 6)
         {
+
             hapticController = col.gameObject.GetComponentInParent<HapticController>();
             foreach (GameObject gObject in audioObject)
             {
@@ -58,7 +90,9 @@ public class SoundOnHover : MonoBehaviour
     }
     private float CalcBowPressure(float forceValue)
     {
-        bowPressure = Mathf.Pow(forceValue, forceExponentialConstant);
+        //bowPressure = Mathf.Pow(forceValue, forceExponentialConstant);
+
+
         // if(forceValue > 0.6){
         //     if(!takeCount){
         //         amountPressedToHard ++;
@@ -66,27 +100,64 @@ public class SoundOnHover : MonoBehaviour
         //         takeCount = true;
         //     }
         // }
-        if (forceValue >= 0.2 && forceValue <= 0.6)
+
+        if (forceValue >= 0.4 && forceValue <= 0.6)
         {
+            //dataLoggerScript.SetSecondsInSweetSpot = dataLoggerScript.GetSecondsInSweetSpot + Time.deltaTime;
+
+            dataLoggerScript.SetSecondsInSweetSpot = dataLoggerScript.GetSecondsInSweetSpot + Time.deltaTime;
+
+
+            //secondsInSweetSpot += Time.deltaTime;
+            //Debug.Log(secondsInSweetSpot);
             //takeCount = false;
             bowPressure = sweetSpotBowPressure;
-            if (!activateSweetSpotTimer)
-            {
-                sweetSpotTimer = DateTime.Now;
-                activateSweetSpotTimer = true;
-            }
+            // if (!activateSweetSpotTimer)
+            // {
+            //     sweetSpotTimer = DateTime.Now;
+            //     activateSweetSpotTimer = true;
+            // }
         }
-        else
+        if (forceValue <= 0.4 || forceValue >= 0.6)
         {
-            //takeCount = false;
-            if (activateSweetSpotTimer)
+            if(dataLoggerScript.GetSecondsInSweetSpot != 0.0f)
             {
-                activateSweetSpotTimer = false;
-                TimeSpan timeInSweetSpot = DateTime.Now.Subtract(sweetSpotTimer);
-                Debug.Log("Time in sweet spot:" + timeInSweetSpot.TotalSeconds);
-                //ADD TO ARRAY EVERY TIME
+                Debug.Log("Sweet Spot data to insert: " + dataLoggerScript.GetSecondsInSweetSpot);
+                dataLoggerScript.GetSweetSpotTimings.Add(dataLoggerScript.GetSecondsInSweetSpot);
+                dataLoggerScript.SetSecondsInSweetSpot = 0f;
             }
+
+            bowPressure = 1.0f;
         }
+
+        if (forceValue >= 0.95)
+        {
+            Debug.Log(forceValue);
+            if (!maxForceIsCounted)
+            {
+                dataLoggerScript.SetCountsAtMaxForce = dataLoggerScript.GetCountsAtMaxForce + 1;
+                maxForceIsCounted = true;
+            }
+
+
+        }
+
+        if (forceValue <= 0.95)
+        {
+            maxForceIsCounted = false;
+        }
+
+        // else
+        // {
+        //     //takeCount = false;
+        //     if (activateSweetSpotTimer)
+        //     {
+        //         activateSweetSpotTimer = false;
+        //         TimeSpan timeInSweetSpot = DateTime.Now.Subtract(sweetSpotTimer);
+        //         Debug.Log("Time in sweet spot:" + timeInSweetSpot.TotalSeconds);
+        //         //ADD TO ARRAY EVERY TIME
+        //     }
+        // }
         return bowPressure;
     }
 
@@ -126,7 +197,7 @@ public class SoundOnHover : MonoBehaviour
             }
             else
             {
-                scriptFaust.setParameter(7, 0);
+                scriptFaust.setParameter(7, 1);
                 scriptFaust.setParameter(9, 0);
                 soundOn = false;
                 audioSource.Stop();
