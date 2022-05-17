@@ -25,7 +25,7 @@ public class VisualizeSong : MonoBehaviour
     private Color white;
 
     //tempo: BPM
-    private float tempo = 3.0f;
+    private float tempo = 2.0f;
 
     //note duration
     private float whole_note_sec;
@@ -44,6 +44,7 @@ public class VisualizeSong : MonoBehaviour
     private SongSequence currentNote;
     enum SongSequence
     {
+        tutorial,
         E_High,
         D_Sharp_High,
         E_High_2,
@@ -55,6 +56,7 @@ public class VisualizeSong : MonoBehaviour
         A
     }
 
+    private DataLogger dataLoggerScript;
     //note lengths
     // float first_note = 
     // float second_note =
@@ -64,7 +66,7 @@ public class VisualizeSong : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        dataLoggerScript = this.gameObject.GetComponent<DataLogger>();
         //init colors
         red = new Color(1.0f, 0.0f, 0.0f);
         green = new Color(0.0f, 1.0f, 0.0f);
@@ -88,6 +90,13 @@ public class VisualizeSong : MonoBehaviour
     {
 
         switch(currentNote){
+            case SongSequence.tutorial:
+                dataLoggerScript.Settutorial = true;
+                if(Input.GetKeyDown("space")){
+                    currentNote = currentNote + 1;
+                    dataLoggerScript.Settutorial = false;
+                }
+                break;
             case SongSequence.E_High:
                 controlNoteState(E_High,quarter_note_sec);
                 break;
@@ -104,7 +113,7 @@ public class VisualizeSong : MonoBehaviour
                 controlNoteState(E_High,quarter_note_sec);
                 break;
             case SongSequence.B:
-                controlNoteState(B, half_note_sec);
+                controlNoteState(B, quarter_note_sec);
                 break;
             case SongSequence.D:
                 controlNoteState(D, quarter_note_sec);
@@ -113,7 +122,7 @@ public class VisualizeSong : MonoBehaviour
                 controlNoteState(C_High,quarter_note_sec);
                 break;
             case SongSequence.A:
-                controlNoteState(A, half_note_sec);
+                controlNoteState(A, quarter_note_sec);
                 break;
         }
     }

@@ -53,20 +53,13 @@ public class SoundOnHover : MonoBehaviour
         scriptFaust = this.gameObject.GetComponent<FaustPlugin_glassHarmonica>();
 
         dataLoggerScript = dataLogger.GetComponent<DataLogger>();
-        //dataLogger = dataLogger.GetComponent<DataLogger>();
-        //secondsAtMaxForce = dataLogger.GetComponent<DataLogger>().secondsAtMaxForce;
-
     }
 
     void OnApplicationQuit()
     {
-        //print("Time at sweet spot: " + TimeSpan.FromSeconds(secondsInSweetSpot));
-        //print("Time at max force: " + TimeSpan.FromSeconds(secondsAtMaxForce));
+
 
     }
-
-  
-
 
     void OnCollisionEnter(Collision col)
     {
@@ -90,38 +83,24 @@ public class SoundOnHover : MonoBehaviour
     }
     private float CalcBowPressure(float forceValue)
     {
-        //bowPressure = Mathf.Pow(forceValue, forceExponentialConstant);
 
-
-        // if(forceValue > 0.6){
-        //     if(!takeCount){
-        //         amountPressedToHard ++;
-        //         Debug.Log("Times pressed to hard: " + amountPressedToHard);
-        //         takeCount = true;
-        //     }
-        // }
-
-        if (forceValue >= 0.4 && forceValue <= 0.6)
+        if (forceValue >= 0.35 && forceValue <= 0.6)
         {
-            //dataLoggerScript.SetSecondsInSweetSpot = dataLoggerScript.GetSecondsInSweetSpot + Time.deltaTime;
-
             dataLoggerScript.SetSecondsInSweetSpot = dataLoggerScript.GetSecondsInSweetSpot + Time.deltaTime;
 
-
-            //secondsInSweetSpot += Time.deltaTime;
-            //Debug.Log(secondsInSweetSpot);
-            //takeCount = false;
             bowPressure = sweetSpotBowPressure;
-            // if (!activateSweetSpotTimer)
-            // {
-            //     sweetSpotTimer = DateTime.Now;
-            //     activateSweetSpotTimer = true;
-            // }
+
         }
-        if (forceValue <= 0.4 || forceValue >= 0.6)
+        if (forceValue <= 0.35 || forceValue >= 0.6)
         {
-            if(dataLoggerScript.GetSecondsInSweetSpot != 0.0f)
+            if(dataLoggerScript.GetSecondsInSweetSpot >= 1.0f)
             {
+                if(dataLoggerScript.GetTutorial){
+                    dataLoggerScript.GetGameMode.Add("Tutorial");
+                }else{
+                    dataLoggerScript.GetGameMode.Add("Task");
+                }
+                dataLoggerScript.GetNoteName.Add(this.gameObject.name);
                 Debug.Log("Sweet Spot data to insert: " + dataLoggerScript.GetSecondsInSweetSpot);
                 dataLoggerScript.GetSweetSpotTimings.Add(dataLoggerScript.GetSecondsInSweetSpot);
                 dataLoggerScript.SetSecondsInSweetSpot = 0f;
@@ -135,7 +114,13 @@ public class SoundOnHover : MonoBehaviour
             Debug.Log(forceValue);
             if (!maxForceIsCounted)
             {
-                dataLoggerScript.SetCountsAtMaxForce = dataLoggerScript.GetCountsAtMaxForce + 1;
+                if(dataLoggerScript.GetTutorial){
+                    dataLoggerScript.GetGameModeForce.Add("Tutorial");
+                }else{
+                    dataLoggerScript.GetGameModeForce.Add("Task");
+                }
+                dataLoggerScript.GetNoteNameForce.Add(this.gameObject.name);
+                dataLoggerScript.GetCountsAtMaxForce.Add(1);
                 maxForceIsCounted = true;
             }
 
@@ -146,18 +131,6 @@ public class SoundOnHover : MonoBehaviour
         {
             maxForceIsCounted = false;
         }
-
-        // else
-        // {
-        //     //takeCount = false;
-        //     if (activateSweetSpotTimer)
-        //     {
-        //         activateSweetSpotTimer = false;
-        //         TimeSpan timeInSweetSpot = DateTime.Now.Subtract(sweetSpotTimer);
-        //         Debug.Log("Time in sweet spot:" + timeInSweetSpot.TotalSeconds);
-        //         //ADD TO ARRAY EVERY TIME
-        //     }
-        // }
         return bowPressure;
     }
 
@@ -181,7 +154,7 @@ public class SoundOnHover : MonoBehaviour
 
                 float temperature = hapticController.GetTemperatureValue;
 
-                if ((hapticController.GetCurrentCondition == 1 || hapticController.GetCurrentCondition == 3 || hapticController.GetCurrentCondition == 4) && temperature != 0.0f)
+                if ((hapticController.GetCurrentCondition == 1 || hapticController.GetCurrentCondition == 3) && temperature != 0.0f)
                 {
                     CalcIntegrationConstant(temperature);
                 }

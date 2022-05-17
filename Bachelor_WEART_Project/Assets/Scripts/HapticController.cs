@@ -419,7 +419,7 @@ public class HapticController : MonoBehaviour
 
             textureToIndex.Volume = Map(calculatedForce, 0.0f, 0.3f, 0.0f, 100.0f);
 
-            if (CalculateForceValue() >= 0.3 && CalculateForceValue() <= 0.6)
+            if (CalculateForceValue() >= 0.35 && CalculateForceValue() <= 0.6)
             {
                 textureToIndex.Volume = 100;
                 //Debug.Log(textureToIndex.Volume);
@@ -442,7 +442,7 @@ public class HapticController : MonoBehaviour
             textureToMiddle.TextureType = weArtTexture.TextureType;
             textureToMiddle.Volume = Map(calculatedForce, 0.0f, 0.3f, 0.0f, 100.0f);
 
-            if (CalculateForceValue() >= 0.4 && CalculateForceValue() <= 0.6)
+            if (CalculateForceValue() >= 0.35 && CalculateForceValue() <= 0.6)
             {
                 textureToMiddle.Volume = 100;
                 //Debug.Log(textureToIndex.Volume);
