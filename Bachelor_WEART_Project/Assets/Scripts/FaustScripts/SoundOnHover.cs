@@ -53,6 +53,10 @@ public class SoundOnHover : MonoBehaviour
         scriptFaust = this.gameObject.GetComponent<FaustPlugin_glassHarmonica>();
 
         dataLoggerScript = dataLogger.GetComponent<DataLogger>();
+
+        // Spat Parameter (No stereo panning)
+        scriptFaust.setParameter(12,0.5f);
+        scriptFaust.setParameter(13,0.5f);
     }
 
     void OnApplicationQuit()

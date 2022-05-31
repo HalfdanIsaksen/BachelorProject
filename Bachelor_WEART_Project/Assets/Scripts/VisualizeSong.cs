@@ -53,7 +53,9 @@ public class VisualizeSong : MonoBehaviour
         B,
         D,
         C_High,
-        A
+        A,
+        D_Sharp_Low,
+        E_Low
     }
 
     private DataLogger dataLoggerScript;
@@ -89,28 +91,30 @@ public class VisualizeSong : MonoBehaviour
     void Update()
     {
 
-        switch(currentNote){
+        switch (currentNote)
+        {
             case SongSequence.tutorial:
                 dataLoggerScript.Settutorial = true;
-                if(Input.GetKeyDown("space")){
+                if (Input.GetKeyDown("space"))
+                {
                     currentNote = currentNote + 1;
                     dataLoggerScript.Settutorial = false;
                 }
                 break;
             case SongSequence.E_High:
-                controlNoteState(E_High,quarter_note_sec);
+                controlNoteState(E_High, quarter_note_sec);
                 break;
             case SongSequence.D_Sharp_High:
                 controlNoteState(D_Sharp_High, quarter_note_sec);
                 break;
             case SongSequence.E_High_2:
-                controlNoteState(E_High,quarter_note_sec);
+                controlNoteState(E_High, quarter_note_sec);
                 break;
             case SongSequence.D_Sharp_High_2:
                 controlNoteState(D_Sharp_High, quarter_note_sec);
                 break;
             case SongSequence.E_High_3:
-                controlNoteState(E_High,quarter_note_sec);
+                controlNoteState(E_High, quarter_note_sec);
                 break;
             case SongSequence.B:
                 controlNoteState(B, quarter_note_sec);
@@ -119,10 +123,16 @@ public class VisualizeSong : MonoBehaviour
                 controlNoteState(D, quarter_note_sec);
                 break;
             case SongSequence.C_High:
-                controlNoteState(C_High,quarter_note_sec);
+                controlNoteState(C_High, quarter_note_sec);
                 break;
             case SongSequence.A:
                 controlNoteState(A, quarter_note_sec);
+                break;
+            case SongSequence.D_Sharp_Low:
+                controlNoteState(D_Sharp_Low, quarter_note_sec);
+                break;
+            case SongSequence.E_Low:
+                controlNoteState(E_Low, quarter_note_sec);
                 break;
         }
     }
@@ -133,20 +143,24 @@ public class VisualizeSong : MonoBehaviour
 
     }
 
-    private void controlNoteState(GameObject note, float note_sec){
+    private void controlNoteState(GameObject note, float note_sec)
+    {
 
         timer += Time.deltaTime;
-        
+
+
         if (timer >= delayStart && timer <= delayStart + note_sec)
         {
             PlayNote(note, green);
             //elapsedTime += delayStart + quarter_note_sec;          
         }
+
         else if (timer >= delayStart + note_sec && timer <= delayStart + note_sec + redDuration)
         {
             PlayNote(note, red);
             //elapsedTime += delayStart + quarter_note_sec;          
         }
+
         else if (timer >= delayStart + note_sec + redDuration)
         {
 
@@ -154,6 +168,26 @@ public class VisualizeSong : MonoBehaviour
             currentNote = currentNote + 1;
             timer = 0;
         }
+
+        // if (timer >= delayStart && timer <= delayStart + note_sec)
+        // {
+        //     PlayNote(note, green);
+        //     //elapsedTime += delayStart + quarter_note_sec;          
+        // }
+
+        // else if (timer >= delayStart + note_sec && timer <= delayStart + note_sec + redDuration)
+        // {
+        //     PlayNote(note, red);
+        //     //elapsedTime += delayStart + quarter_note_sec;          
+        // }
+
+        // else if (timer >= delayStart + note_sec + redDuration)
+        // {
+
+        //     PlayNote(note, white);
+        //     currentNote = currentNote + 1;
+        //     timer = 0;
+        // }
 
     }
 }
